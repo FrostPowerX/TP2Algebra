@@ -306,7 +306,6 @@ void InitVectors(Vector3 offSet, Vector3 rotationAngles, Cube& cube, float magni
 
 	cube.vecC.rotationAngles = GetCrossProduct(cube.vecA.rotationAngles, cube.vecB.rotationAngles);
 	GetFinishPosition(cube.vecC);
-
 }
 
 void InitCamera()
