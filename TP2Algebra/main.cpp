@@ -7,31 +7,38 @@
 
 using namespace std;
 
-struct VecRect
+//Rectas
+struct Rect
 {
+	//positions
 	Vector3 startPos;
 	Vector3 finishPos;
+	//direction
 	Vector3 rotationAngles;
+	//length
 	float magnitude;
 };
 
 struct Cube
 {
-	VecRect vecA;
-	VecRect vecB;
-	VecRect vecC;
+	//vector random
+	Rect vecA;
+	//vector a 90 grados del primero
+	Rect vecB;
+	//vector a 90 grados de los dos anteriores
+	Rect vecC;
 
-	VecRect vecA2;
-	VecRect vecA3;
-	VecRect vecA4;
+	Rect vecA2;
+	Rect vecB2;
+	Rect vecC2;
 
-	VecRect vecB2;
-	VecRect vecB3;
-	VecRect vecB4;
+	Rect vecA3;
+	Rect vecB3;
+	Rect vecC3;
 
-	VecRect vecC2;
-	VecRect vecC3;
-	VecRect vecC4;
+	Rect vecA4;
+	Rect vecB4;
+	Rect vecC4;
 };
 
 Camera3D camera;
@@ -56,7 +63,7 @@ void DrawCube(Cube cube);
 void InitVectors(Vector3 offSet, Vector3 rotationAngles, Cube& cube, float magnitude, float baseMagnitude);
 void InitCamera();
 
-void GetFinishPosition(VecRect& vector);
+void GetFinishPosition(Rect& vector);
 Vector3 GetCrossProduct(Vector3 rotationA, Vector3 rotationB);
 
 int main(void)
@@ -94,6 +101,8 @@ void Update()
 {
 	char aux = GetCharPressed();
 	float num = 0;
+
+	//'1'		  //'9'
 	if (aux >= 49 && aux <= 57)
 	{
 		num = aux - 48;
@@ -110,16 +119,16 @@ void Update()
 
 	UpdateCameraPro(&camera,
 		Vector3{
-		(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) * 0.1f -      // Move forward-backward
+			(IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) * 0.1f -      // Move forward-backward
 			(IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) * 0.1f,
 			(IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) * 0.1f -   // Move right-left
 			(IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) * 0.1f,
 			0.0f                                                // Move up-down
 		},
 		Vector3{
-		GetMouseDelta().x * 0.05f,                            // Rotation: yaw
+			GetMouseDelta().x * 0.05f,                            // Rotation: yaw
 			GetMouseDelta().y * 0.05f,                            // Rotation: pitch
-			0.0f                                                // Rotation: roll
+			0.0f                                                  // Rotation: roll
 		},
 		GetMouseWheelMove() * 2.0f);                              // Move to target (zoom)
 
@@ -175,9 +184,9 @@ void BuildPyramid()
 	Vector3 offSet = { 0.0f, 0.0f, 0.0f };
 	Vector3 startRotation = { (float)(rand() % maxDegrees), (float)(rand() % maxDegrees), (float)(rand() % maxDegrees) };
 
+	//la magnitud de todo ajaj
 	const float baseMagnitude = GetRandomValue(20, 100);
 	float startMagnitude = baseMagnitude;
-	int numCubes = 5;
 
 	float perimeter = 0;
 	float area = 0;
@@ -195,7 +204,7 @@ void BuildPyramid()
 
 			pyramidParts.push_back(myCube);
 
-			VecRect midPoint = myCube.vecA4;
+			Rect midPoint = myCube.vecA4;
 			midPoint.magnitude = myCube.vecC.magnitude;
 			GetFinishPosition(midPoint);
 
@@ -203,22 +212,20 @@ void BuildPyramid()
 			midPoint.rotationAngles = myCube.vecB4.rotationAngles;
 			GetFinishPosition(midPoint);
 
-
-
 			offSet = midPoint.finishPos;
 
 			startMagnitude -= myCube.vecC.magnitude * 2;
 
-			perimeter += 12 * myCube.vecC.magnitude;
-			//((myCube.vecA.magnitude * 8.0f) + (myCube.vecC.magnitude * 4.0f));
+			//perimetro de un cuboide (suma de alto, ancho y profundidad)
+			perimeter += ((myCube.vecA.magnitude * 8.0f) + (myCube.vecC.magnitude * 4.0f));
+			//area de las 6 caras
 			area += ((myCube.vecA.magnitude * 2.0f) + (myCube.vecC.magnitude * 2.0f)) * 6.0f;
+			//formula de volumen para el cuboide. (largo * profundidad * alto)
 			volume += ((myCube.vecA.magnitude * myCube.vecB.magnitude) * myCube.vecC.magnitude);
 
 			totalPerimeter += perimeter;
 			totalArea += area;
 			totalVolume += volume;
-
-			numCubes--;
 		}
 		else
 			pyramidFinished = true;
@@ -229,9 +236,7 @@ void BuildPyramid()
 void DrawPyramid()
 {
 	for (int i = 0; i < pyramidParts.size(); i++)
-	{
 		DrawCube(pyramidParts[i]);
-	}
 }
 
 void Draw()
@@ -262,28 +267,33 @@ void DrawCube(Cube cube)
 		cubeUpdated = false;
 	}
 
+	//Cara 1
 	DrawLine3D(cube.vecA.startPos, cube.vecA.finishPos, RED);
-	DrawLine3D(cube.vecB.startPos, cube.vecB.finishPos, BLUE);
-	DrawLine3D(cube.vecC.startPos, cube.vecC.finishPos, GREEN);
+	DrawLine3D(cube.vecB.startPos, cube.vecB.finishPos, RED);
+	DrawLine3D(cube.vecC.startPos, cube.vecC.finishPos, RED);
 
-	DrawLine3D(cube.vecA2.startPos, cube.vecA2.finishPos, RED);
-	DrawLine3D(cube.vecA3.startPos, cube.vecA3.finishPos, RED);
-	DrawLine3D(cube.vecA4.startPos, cube.vecA4.finishPos, RED);
-
+	//Cara 2
+	DrawLine3D(cube.vecA2.startPos, cube.vecA2.finishPos, BLUE);
 	DrawLine3D(cube.vecB2.startPos, cube.vecB2.finishPos, BLUE);
-	DrawLine3D(cube.vecB3.startPos, cube.vecB3.finishPos, BLUE);
-	DrawLine3D(cube.vecB4.startPos, cube.vecB4.finishPos, BLUE);
+	DrawLine3D(cube.vecC2.startPos, cube.vecC2.finishPos, BLUE);
 
-	DrawLine3D(cube.vecC2.startPos, cube.vecC2.finishPos, GREEN);
+	//Cara 3
+	DrawLine3D(cube.vecA3.startPos, cube.vecA3.finishPos, GREEN);
+	DrawLine3D(cube.vecB3.startPos, cube.vecB3.finishPos, GREEN);
 	DrawLine3D(cube.vecC3.startPos, cube.vecC3.finishPos, GREEN);
-	DrawLine3D(cube.vecC4.startPos, cube.vecC4.finishPos, GREEN);
+
+	//Cara 4
+	DrawLine3D(cube.vecA4.startPos, cube.vecA4.finishPos, YELLOW);
+	DrawLine3D(cube.vecB4.startPos, cube.vecB4.finishPos, YELLOW);
+	DrawLine3D(cube.vecC4.startPos, cube.vecC4.finishPos, YELLOW);
+
 }
 
 void InitVectors(Vector3 offSet, Vector3 rotationAngles, Cube& cube, float magnitude, float baseMagnitude)
 {
 	Vector3 zDir = { 0,0,1 };
 
-	VecRect aux;
+	Rect aux;
 	cube.vecA.startPos = offSet;
 	cube.vecA.rotationAngles = rotationAngles;
 	cube.vecA.magnitude = magnitude;
@@ -293,7 +303,7 @@ void InitVectors(Vector3 offSet, Vector3 rotationAngles, Cube& cube, float magni
 	aux = cube.vecA;
 	aux.rotationAngles = zDir;
 
-	//Vector B
+	//Vector B	
 	cube.vecB.rotationAngles = GetCrossProduct(cube.vecA.rotationAngles, aux.rotationAngles);
 	cube.vecB.startPos = offSet;
 	cube.vecB.magnitude = cube.vecA.magnitude;
@@ -313,12 +323,12 @@ void InitCamera()
 	camera.position = { 0.0f, 0.0f, 10.0f };	// Camera position
 	camera.target = { 0.0f, 0.0f, 0.0f };		// Camera looking at point
 	camera.up = { 0.0f, 1.0f, 0.0f };			// Camera up vector (rotation towards target)
-	camera.fovy = 85.0f;                        // Camera field-of-view Y
+	camera.fovy = 90.0f;                        // Camera field-of-view Y
 	camera.projection = CAMERA_PERSPECTIVE;     // Camera mode type
 
 }
 
-void GetFinishPosition(VecRect& vector) // Rotacion de angulos euler
+void GetFinishPosition(Rect& vector) // Rotacion de angulos euler
 {
 	vector.finishPos.x = vector.startPos.x + vector.magnitude * cos(vector.rotationAngles.y) * cos(vector.rotationAngles.z);
 	vector.finishPos.y = vector.startPos.y + vector.magnitude * sin(vector.rotationAngles.x) * cos(vector.rotationAngles.y);
